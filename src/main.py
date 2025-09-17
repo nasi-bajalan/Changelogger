@@ -1,20 +1,10 @@
 import datetime
 import pathlib
 from collections import defaultdict
-from typing import Dict, List
 
-import typer
 from pydantic import ValidationError
-from rich.console import Console
 
-from config import (
-    ChangeloggerConfig,
-    ChangeType,
-    Fragment,
-    get_project_version,
-    load_config,
-    parse_fragment,
-)
+from config import ChangeloggerConfig, ChangeType, Fragment, parse_fragment
 
 
 def parse_and_group_fragments(
@@ -39,9 +29,7 @@ def parse_and_group_fragments(
     return grouped, errors
 
 
-def archive_fragments(
-    version_dir: pathlib.Path, config: ChangeloggerConfig
-) -> None:
+def archive_fragments(version_dir: pathlib.Path, config: ChangeloggerConfig) -> None:
     """Move the released fragment folder to a '.released' subdirectory."""
     released_dir = config.changelog_dir / ".released"
     released_dir.mkdir(exist_ok=True)
@@ -51,9 +39,7 @@ def archive_fragments(
     version_dir.rename(target_path)
 
 
-def prepend_to_changelog(
-    new_content: str, changelog_file: pathlib.Path
-) -> None:
+def prepend_to_changelog(new_content: str, changelog_file: pathlib.Path) -> None:
     """Prepends the new content to the changelog file."""
     original_content = ""
     if changelog_file.exists():

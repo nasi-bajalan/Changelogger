@@ -7,7 +7,10 @@ repos:
     -   id: check-yaml
     -   id: check-toml
     -   id: check-added-large-files
--   repo: local
+
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.13.0
     hooks:
     -   id: ruff-check
         name: ruff check
@@ -15,7 +18,7 @@ repos:
         entry: ruff check --force-exclude
         language: python
         types_or: [python, pyi, jupyter]
-        args: [ --fix ]
+        args: [--fix]
         require_serial: true
         additional_dependencies: []
         minimum_pre_commit_version: "2.9.2"
@@ -26,7 +29,6 @@ repos:
         entry: ruff format --force-exclude
         language: python
         types_or: [python, pyi, jupyter]
-        args: [ --fix ]
         require_serial: true
         additional_dependencies: []
         minimum_pre_commit_version: "2.9.2"
@@ -38,11 +40,13 @@ repos:
         entry: ruff check --force-exclude
         language: python
         types_or: [python, pyi, jupyter]
-        args: [ --fix ]
+        args: [--fix]
         require_serial: true
         additional_dependencies: []
         minimum_pre_commit_version: "2.9.2"
 
+-   repo: local
+    hooks:
     -   id: isort
         name: isort (python)
         entry: isort
