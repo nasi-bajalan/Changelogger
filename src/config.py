@@ -1,4 +1,6 @@
 import pathlib
+import frontmatter
+import tomllib
 from enum import Enum
 
 from pydantic import (
@@ -76,3 +78,53 @@ class ChangeloggerConfig(BaseModel):
         default_factory=ValidationConfig
     )
     tickets: TicketConfig | None = Field(default_factory=TicketConfig)
+
+
+def get_project_version() -> str:
+    """Read the version string from the [project] section of pyproject.toml."""
+    pyproject_path = pathlib.Path("pyproject.toml")
+    if not pyproject_path.exists():
+        raise FileNotFoundError("pyproject.toml not found.")
+
+    with pyproject_path.open("rb") as f:
+        pyproject_data = tomllib.load(f)
+
+    try:
+        version = pyproject_data["project"]["version"]
+        return version
+    except KeyError:
+        raise ValueError("Could not find [project].version in pyproject.toml.")
+
+
+def load_config() -> ChangeloggerConfig:
+    """Load the project configuration from the 'pyproject.toml'."""
+    pyproject_path = pathlib.Path("pyproject.toml")
+    if not pyproject_path.exists():
+        raise FileNotFoundError("pyproject.toml not found.")
+
+    with pyproject_path.open("rb") as f:
+        pyproject_data = tomllib.load(f)
+
+    config_data = pyproject_data.get("tool", {}).get("changelogger", {})
+    if not config_data:
+        raise ValueError(
+            "[tool.changelogger] section not found in pyproject.toml."
+        )
+
+    return ChangeloggerConfig(**config_data)
+
+
+def parse_fragment(path: pathlib.Path, config: ChangeloggerConfig) -> Fragment:
+    """Loads a Markdown file with YAML front matter and validates it."""
+    try:
+        # Use the frontmatter library to load the file
+        post = frontmatter.load(path)
+    except Exception as e:
+        # Catch errors if the file is malformed
+        raise ValueError(f"Could not parse front matter. Original error: {e}")
+
+    description = post.content.strip()
+
+    # Combine the metadata from the front matter with the description
+    data = {**post.metadata, "description": description}
+    return Fragment.model_validate(data, context={"config": config})
