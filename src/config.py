@@ -1,16 +1,10 @@
 import pathlib
-import frontmatter
 import tomllib
 from enum import Enum
 
-from pydantic import (
-    BaseModel,
-    Field,
-    HttpUrl,
-    ValidationInfo,
-    field_validator,
-    model_validator,
-)
+import frontmatter
+from pydantic import (BaseModel, Field, HttpUrl, ValidationInfo,
+                      field_validator, model_validator)
 
 
 class ChangeType(str, Enum):
