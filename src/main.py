@@ -2,9 +2,21 @@ import datetime
 import pathlib
 from collections import defaultdict
 
+import typer
 from pydantic import ValidationError
+from rich.console import Console
 
-from config import ChangeloggerConfig, ChangeType, Fragment, parse_fragment
+from config import (
+    ChangeloggerConfig,
+    ChangeType,
+    Fragment,
+    get_project_version,
+    load_config,
+    parse_fragment,
+)
+
+app = typer.Typer(help="A simple changelog manager.")
+console = Console()
 
 
 def parse_and_group_fragments(
@@ -30,11 +42,11 @@ def parse_and_group_fragments(
 
 
 def archive_fragments(version_dir: pathlib.Path, config: ChangeloggerConfig) -> None:
-    """Move the released fragment folder to a '.released' subdirectory."""
+    """Move the released fragment folder to a `.released` subdirectory."""
     released_dir = config.changelog_dir / ".released"
     released_dir.mkdir(exist_ok=True)
 
-    # Move '.changelog/v1.2.0' to '.changelog/.released/v1.2.0'
+    # Move `.changelog/v1.2.0` to `.changelog/.released/v1.2.0`
     target_path = released_dir / version_dir.name
     version_dir.rename(target_path)
 
@@ -63,7 +75,7 @@ def generate_markdown(
         try:
             change_type_enum = ChangeType(type_str)
         except ValueError:
-            continue  # Skip if section in config isn't a valid ChangeType
+            continue  # Skip if section in config isn`t a valid ChangeType
 
         if change_type_enum in fragments:
             # Use the title from the config file
@@ -79,3 +91,91 @@ def generate_markdown(
             lines.append("")
 
     return "\n".join(lines)
+
+
+@app.command()
+def start() -> None:
+    """Create a new versioned directory for changelog fragments based on pyproject.toml."""
+    try:
+        config = load_config()
+        current_version = get_project_version()
+    except (FileNotFoundError, ValueError) as e:
+        console.print(f"[bold red]Error: {e}[/bold red]")
+        raise typer.Exit(code=1) from e
+
+    version_dir = config.changelog_dir / f"v{current_version}"
+
+    if version_dir.exists():
+        console.print(
+            f"[yellow]Directory already exists for version {current_version}:[/yellow] `{version_dir}`"
+        )
+        raise typer.Exit
+
+    console.print(
+        f"🚀 Starting work on version [bold cyan]v{current_version}[/bold cyan]."
+    )
+    version_dir.mkdir(parents=True)
+    console.print(f"✅ Created changelog directory: `{version_dir}`")
+    console.print("You can now add your .md fragment files there.")
+
+
+@app.command()
+def release(
+    dry_run: str = typer.Option(
+        default=False,
+        help="Don`t write files, just print what would be done.",
+    ),
+) -> None:
+    """Generate a new changelog from the fragments of the current project version."""
+    try:
+        config = load_config()
+        current_version = get_project_version()
+    except (FileNotFoundError, ValueError) as e:
+        console.print(f"[bold red]Error: {e}[/bold red]")
+        raise typer.Exit(code=1) from e
+
+    # Dynamically determine the fragments directory to read from
+    version_dir = config.changelog_dir / f"v{current_version}"
+    if not version_dir.exists() or not version_dir.is_dir():
+        console.print(
+            f"[bold red]Error: Changelog directory not found for current version `{current_version}`.[/bold red]"
+        )
+        console.print(
+            f"Run `changelogger start` first to create it at: `{version_dir}`"
+        )
+        raise typer.Exit(code=1)
+
+    console.print(f"🔍 Reading fragments from [cyan]`{version_dir}`[/cyan]...")
+
+    # Parse fragments from the versioned directory
+    fragments_by_type, errors = parse_and_group_fragments(version_dir, config)
+    if errors:
+        console.print(
+            "[bold red]Errors found in fragment files. Please fix before releasing:[/bold red]"
+        )
+        for error in errors:
+            console.print(f"- {error}")
+        raise typer.Exit(code=1)
+
+    if not fragments_by_type:
+        console.print("[yellow]No changelog fragments found. Exiting.[/yellow]")
+        raise typer.Exit
+
+    # Generate markdown (the function call needs the version)
+    new_content = generate_markdown(f"v{current_version}", fragments_by_type, config)
+    if dry_run:
+        console.print(
+            "\n[bold yellow]--dry-run enabled. No files will be changed.[/bold yellow]"
+        )
+        raise typer.Exit
+
+    # Prepend to changelog
+    prepend_to_changelog(new_content, config.changelog_file)
+    console.print(
+        f"\n✅ Updated [bold magenta]`{config.changelog_file}`[/bold magenta]."
+    )
+
+    # Archive the fragment folder instead of deleting its contents
+    archive_fragments(version_dir, config)
+    console.print(f"🗄️ Archived fragment directory for version v{current_version}.")
+    console.print("\n🎉 [bold green]Release complete![/bold green]")

@@ -1,2 +1,2 @@
 # Changelogger
-Merge all the changelogs together
+Merge all the changelogs `together`
