@@ -1,0 +1,51 @@
+[project]
+name = "changelogger"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "frontmatter>=3.0.8",
+    "pydantic>=2.11.9",
+    "rich>=14.1.0",
+    "typer>=0.17.4",
+]
+
+# This is the crucial part for creating the command!
+[project.scripts]
+changelogger = "main:app"
+
+# Optional, but good practice for dev dependencies
+[project.optional-dependencies]
+dev = ["pytest"]
+
+# And the pytest config to find your code in 'src'
+[tool.pytest.ini_options]
+pythonpath = "src"
+
+[tool.black]
+line-length = 88
+skip-string-normalization = true
+
+
+[tool.ruff]
+line-length = 88
+
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+
+ignore = [
+    "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",
+    "D203", "D212", "COM812", "EM101", "ISC001", "TRY003", "DTZ011",
+    "E203", "E501", "ERA001"
+]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+]
