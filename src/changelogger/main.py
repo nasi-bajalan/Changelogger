@@ -3,7 +3,10 @@ import pathlib
 from collections import defaultdict
 
 import typer
-from config import (
+from pydantic import ValidationError
+from rich.console import Console
+
+from .config import (
     ChangeloggerConfig,
     ChangeType,
     Fragment,
@@ -11,8 +14,6 @@ from config import (
     load_config,
     parse_fragment,
 )
-from pydantic import ValidationError
-from rich.console import Console
 
 app = typer.Typer(help="A simple changelog manager.")
 console = Console()

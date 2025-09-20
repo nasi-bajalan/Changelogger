@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "frontmatter>=3.0.8",
     "pydantic>=2.11.9",
+    "python-frontmatter>=1.1.0",
     "rich>=14.1.0",
     "typer>=0.17.4",
 ]

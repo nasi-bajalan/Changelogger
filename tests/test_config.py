@@ -4,7 +4,9 @@ import pytest
 
 from changelogger.config import (
     ChangeloggerConfig,
+    Fragment,
     load_config,
+    parse_fragment,
 )
 
 DATA_FILE_PATH = pathlib.Path(__file__).parent / "data"
@@ -37,3 +39,9 @@ def test_load_config_no_tool(
     with pytest.raises(expected_error) as err:
         load_config(pyproject_path)
     assert str(err.value) == expected_error_message
+
+
+def test_parse_fragments() -> None:
+    mock_config = load_config(DATA_FILE_PATH / "test_pyproject.toml")
+    result = parse_fragment(DATA_FILE_PATH / "sample-changelog.md", mock_config)
+    assert isinstance(result, Fragment)

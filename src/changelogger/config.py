@@ -109,7 +109,7 @@ def load_config(
 
 
 def parse_fragment(path: pathlib.Path, config: ChangeloggerConfig) -> Fragment:
-    """Load a Markdown file with YAML front matter and validates it."""
+    """Load a Markdown file with front matter and validates it."""
     try:
         post = frontmatter.load(path)
     except Exception as e:
