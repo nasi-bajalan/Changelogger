@@ -2,7 +2,7 @@ import pathlib
 
 import pytest
 
-from chnagelogger.config import (
+from changelogger.config import (
     ChangeloggerConfig,
     load_config,
 )
