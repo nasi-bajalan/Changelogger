@@ -1,6 +1,6 @@
 import datetime
-import pathlib
 from collections import defaultdict
+from pathlib import Path
 
 import typer
 from pydantic import ValidationError
@@ -20,7 +20,7 @@ console = Console()
 
 
 def parse_and_group_fragments(
-    version_dir: pathlib.Path, config: ChangeloggerConfig
+    version_dir: Path, config: ChangeloggerConfig
 ) -> (dict[ChangeType, list[Fragment]], list[str]):
     grouped = defaultdict(list)
     errors = []
@@ -41,7 +41,7 @@ def parse_and_group_fragments(
     return grouped, errors
 
 
-def archive_fragments(version_dir: pathlib.Path, config: ChangeloggerConfig) -> None:
+def archive_fragments(version_dir: Path, config: ChangeloggerConfig) -> None:
     """Move the released fragment folder to a `.released` subdirectory."""
     released_dir = config.changelog_dir / ".released"
     released_dir.mkdir(exist_ok=True)
@@ -51,7 +51,7 @@ def archive_fragments(version_dir: pathlib.Path, config: ChangeloggerConfig) -> 
     version_dir.rename(target_path)
 
 
-def prepend_to_changelog(new_content: str, changelog_file: pathlib.Path) -> None:
+def prepend_to_changelog(new_content: str, changelog_file: Path) -> None:
     """Prepends the new content to the changelog file."""
     original_content = ""
     if changelog_file.exists():
@@ -98,7 +98,7 @@ def start() -> None:
     """Create a new versioned directory for changelog fragments based on pyproject.toml."""
     try:
         config = load_config()
-        current_version = get_project_version()
+        current_version = get_project_version(Path("pyproject.toml"))
     except (FileNotFoundError, ValueError) as e:
         console.print(f"[bold red]Error: {e}[/bold red]")
         raise typer.Exit(code=1) from e

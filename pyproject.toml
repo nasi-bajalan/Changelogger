@@ -1,6 +1,6 @@
 [project]
 name = "changelogger"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -11,7 +11,8 @@ dependencies = [
     "rich>=14.1.0",
     "typer>=0.17.4",
 ]
-
+[tool.setuptools.dynamic]
+version = {attr = "changelogger.__version__"}
 [project.scripts]
 changelogger = "main:app"
 
@@ -53,7 +54,7 @@ select = ["ALL"]
 ignore = [
     "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",
     "D203", "D212", "COM812", "EM101", "ISC001", "TRY003", "DTZ011",
-    "E203", "E501", "ERA001"
+    "E203", "E501", "ERA001", "G004", "D205", "C901"
 ]
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["S101"]

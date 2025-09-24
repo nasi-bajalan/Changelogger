@@ -5,6 +5,7 @@ import pytest
 from changelogger.config import (
     ChangeloggerConfig,
     Fragment,
+    get_project_version,
     load_config,
     parse_fragment,
 )
@@ -45,3 +46,7 @@ def test_parse_fragments() -> None:
     mock_config = load_config(DATA_FILE_PATH / "test_pyproject.toml")
     result = parse_fragment(DATA_FILE_PATH / "sample-changelog.md", mock_config)
     assert isinstance(result, Fragment)
+
+
+def test_get_project_version() -> None:
+    assert get_project_version(DATA_FILE_PATH / "test_pyproject.toml") == "0.1.0"
